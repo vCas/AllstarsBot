@@ -34,7 +34,7 @@ jobs:
       uses: thedoctor0/zip-release@master
       with:
         filename: '${{env.ZIP_FILE}}'
-        workingDirectory:  ${{ env.ZIP_PATH }}
+        directory:  ${{ env.ZIP_PATH }}
         exclusions: '*.git* *.idea*' 
   
   deploy:
