@@ -25,10 +25,10 @@ jobs:
         dotnet-version: '5.0.x'
 
     - name: Install dependencies
-      run: dotnet restore ./src/AllstarsBot.sln
+      run: dotnet restore ./AllstarsBot.sln
       
     - name: Build
-      run: dotnet build ./src/AllstarsBot.sln --configuration Release --no-restore --output ${{env.BINARIES}}
+      run: dotnet build ./AllstarsBot.sln --configuration Release --no-restore --output ${{env.BINARIES}}
       
     - name: Zip
       uses: thedoctor0/zip-release@master
