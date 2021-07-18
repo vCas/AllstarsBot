@@ -44,5 +44,5 @@ jobs:
       uses: srijken/azure-zip-deploy@master
       with:
         zip-file: ${{ env.ZIP_FILEPATH }}
-        publish-profile: ${{ secrets.AzureAppService_PublishProfile_389e639a54e1417c8173727be38ee476 }}
+        publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_A1813567FF604AB6899EA65C72F123C3 }}
         
