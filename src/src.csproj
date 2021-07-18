@@ -2,7 +2,6 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
-    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <UserSecretsId>91f66253-7719-4a2e-9b29-f53d458423ed</UserSecretsId>
     <RootNamespace>AllstarsBot</RootNamespace>
     <AssemblyName>run</AssemblyName>
