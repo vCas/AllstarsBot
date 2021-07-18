@@ -30,8 +30,8 @@ jobs:
     - name: Install dependencies
       run: dotnet restore ./AllstarsBot.sln
       
-    - name: Build
-      run: dotnet build ./AllstarsBot.sln -r win-x86 --self-contained false --configuration Release --no-restore --output ${{env.BINARIES}}
+    - name: Publish
+      run: dotnet publish ./AllstarsBot.sln -r win-x86 --self-contained false --configuration Release --no-restore --output ${{env.BINARIES}}
       
     - name: Zip
       uses: thedoctor0/zip-release@master
