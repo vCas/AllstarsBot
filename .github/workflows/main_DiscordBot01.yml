@@ -34,7 +34,7 @@ jobs:
       uses: thedoctor0/zip-release@master
       with:
         filename: '${{env.ZIP_FILE}}'
-        workingDirectory:  ${{env.ZIP_PATH}}
+        workingDirectory:  ${{ env.ZIP_PATH }}
         exclusions: '*.git* *.idea*' 
   
   deploy:
@@ -42,12 +42,11 @@ jobs:
     needs: build
     environment:
       name: 'production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     
     steps:
     - name: Deploy To Azure WebJobs
        uses: srijken/azure-zip-deploy@v1.0.1
        with:
-        zip-file: ${{env.ZIP_FILEPATH}}
+        zip-file: ${{ env.ZIP_FILEPATH }}
         publish-profile: ${{ secrets.AzureAppService_PublishProfile_389e639a54e1417c8173727be38ee476 }}
         
