@@ -5,6 +5,7 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <UserSecretsId>91f66253-7719-4a2e-9b29-f53d458423ed</UserSecretsId>
     <RootNamespace>AllstarsBot</RootNamespace>
+    <AssemblyName>run</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="2.4.0" />

@@ -1,7 +1,7 @@
 ﻿name: Deploy AllStarsDiscordBot
 
 env:
-  BINARIES: './output/app_data/jobs/continous/AllStarsDiscordBot'
+  BINARIES: './output/app_data/jobs/continuous/AllStarsDiscordBot'
   ZIP_FILE: 'DiscordBot.zip'
   ZIP_PATH: './output'
   ZIP_FILEPATH: './output/DiscordBot.zip'
