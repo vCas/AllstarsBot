@@ -1,0 +1,53 @@
+﻿name: Deploy AllStarsDiscordBot
+
+env:
+  BINARIES: './output/app_data/jobs/continous/AllStarsDiscordBot'
+  ZIP_FILE: 'DiscordBot.zip'
+  ZIP_PATH: './output'
+  ZIP_FILEPATH: './output/DiscordBot.zip'
+  
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+ 
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - users: actions/checkout@v2
+    
+    - name: Set up .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '5.0.x'
+
+    - name: Install dependencies
+      run: dotnet restore ./src/AllstarsBot.sln
+      
+    - name: Build
+      run: dotnet build ./src/AllstarsBot.sln --configuration Release --no-restore --output ${{env.BINARIES}}
+      
+    - name: Zip
+      uses: thedoctor0/zip-release@master
+      with:
+        filename: '${{env.ZIP_FILE}}'
+        workingDirectory:  ${{env.ZIP_PATH}}
+        exclusions: '*.git* *.idea*' 
+  
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: 'production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    
+    steps:
+    - name: Deploy To Azure WebJobs
+       users: srijken/azure-webjob-deploy@master
+       with:
+        zip-file: ${{env.ZIP_FILEPATH}}
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_389e639a54e1417c8173727be38ee476 }}
+        
