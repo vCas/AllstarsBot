@@ -14,6 +14,9 @@ on:
  
 jobs:
   build:
+    environment:
+      name: 'production'
+       
     runs-on: ubuntu-latest
     
     steps:
@@ -36,14 +39,7 @@ jobs:
         filename: '${{env.ZIP_FILE}}'
         directory:  ${{ env.ZIP_PATH }}
         exclusions: '*.git* *.idea*' 
-  
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    environment:
-      name: 'production'
     
-    steps:
     - name: Deploy To Azure WebJobs
       uses: srijken/azure-zip-deploy@master
       with:
