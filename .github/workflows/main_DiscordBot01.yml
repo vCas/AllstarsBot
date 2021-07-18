@@ -31,7 +31,7 @@ jobs:
       run: dotnet restore ./AllstarsBot.sln
       
     - name: Publish
-      run: dotnet build ./AllstarsBot.sln --configuration Release --no-restore --output ${{env.BINARIES}}
+      run: dotnet publish ./AllstarsBot.sln -r win-x64 --self-contained false --configuration Release --no-restore --output ${{env.BINARIES}}
       
     - name: Zip
       uses: thedoctor0/zip-release@master
