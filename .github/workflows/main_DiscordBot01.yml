@@ -46,7 +46,7 @@ jobs:
     
     steps:
     - name: Deploy To Azure WebJobs
-       uses: srijken/azure-webjob-deploy@master
+       uses: srijken/azure-zip-deploy@v1.0.1
        with:
         zip-file: ${{env.ZIP_FILEPATH}}
         publish-profile: ${{ secrets.AzureAppService_PublishProfile_389e639a54e1417c8173727be38ee476 }}
