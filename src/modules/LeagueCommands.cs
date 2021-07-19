@@ -12,6 +12,8 @@ using Newtonsoft.Json.Linq;
 namespace AllstarsBot.modules {
     [Group("LeagueBot")]
     public class LeagueCommands : ModuleBase<SocketCommandContext> {
+        private static readonly Random Random = new Random();
+
         private static readonly Dictionary<string, string> ChampionIcons = new() {
             {"Anivia", "<:Anivia:866006734585462785>"},
             {"Azir", "<:Azir:866006734661222451>"},
@@ -197,7 +199,6 @@ namespace AllstarsBot.modules {
         public async Task NewGame(GameArguments args = null) {
             args ??= new GameArguments();
 
-            var rnd = new Random();
             var embedBuilder = new EmbedBuilder()
                 .WithTitle($"League Intern Champion Rollercoaster")
                 .WithCurrentTimestamp();
@@ -231,10 +232,8 @@ namespace AllstarsBot.modules {
             }
 
             var allChamps = GetChampions();
-            var champsSortedRandomly = new string[allChamps.Keys.Count];
-
-            allChamps.Keys.CopyTo(champsSortedRandomly, 0);
-            champsSortedRandomly = champsSortedRandomly.OrderBy(x => rnd.Next()).ToArray();
+            var champsSortedRandomly = allChamps.Keys.ToList();
+            Shuffle(champsSortedRandomly);
 
             var champsPerTeam = 12;
             if (args.ChampionAmount > 0) {
@@ -285,26 +284,26 @@ namespace AllstarsBot.modules {
             }
 
             if (players is {Count: > 0} && (playersTeamOne.Count == 0 && playersTeamTwo.Count == 0)) {
-                players = players.OrderBy(a => rnd.Next()).ToList();
+                Shuffle(players);
                 playersTeamOne = players.Take(players.Count / 2).ToList();
                 playersTeamTwo = players.Skip(players.Count / 2).ToList();
+            }
 
-                if (playersTeamOne.Count > 0 && playersTeamTwo.Count > 0) {
-                    var t1 = new StringBuilder();
-                    foreach (var x in playersTeamOne) {
-                        t1.AppendLine(x);
-                    }
-
-                    embedBuilder.AddField($"Team 1 Blue ({playersTeamOne.Count})", t1.ToString(), true);
-
-                    var t2 = new StringBuilder();
-                    foreach (var x in playersTeamTwo) {
-                        t2.AppendLine(x);
-                    }
-
-                    embedBuilder.AddField($"Team 2 Red ({playersTeamTwo.Count})", t2.ToString(), true);
-                    embedBuilder.AddField("\u200B", "\u200B", true);
+            if (playersTeamOne.Count > 0 && playersTeamTwo.Count > 0) {
+                var t1 = new StringBuilder();
+                foreach (var x in playersTeamOne) {
+                    t1.AppendLine(x);
                 }
+
+                embedBuilder.AddField($"Team 1 Blue ({playersTeamOne.Count})", t1.ToString(), true);
+
+                var t2 = new StringBuilder();
+                foreach (var x in playersTeamTwo) {
+                    t2.AppendLine(x);
+                }
+
+                embedBuilder.AddField($"Team 2 Red ({playersTeamTwo.Count})", t2.ToString(), true);
+                embedBuilder.AddField("\u200B", "\u200B", true);
             }
 
             var blueTeam = TeamCreator(allChamps, teamOne);
@@ -345,46 +344,75 @@ namespace AllstarsBot.modules {
         }
 
         private static string[] _players = {
+            "TrundleGod", "SionLovesPillar", "SapphireCrystal", "ZileanIsDumb", "TheTentacleMiracle", "ShacoTop",
+            "PermaGankedMid", "DoctorJanna", "VayneFlash", "DevMozz", "TwoHundredYears", "IncomingMalphite", "TaricADC",
+            "AmumuStoleMyPenta", "RiverShen", "TankVeigar"
         };
 
-        private static string[] _champs = {
+        private class Helper {
+            public int NextChamps { get; set; }
+        }
 
-        };
-        
         [Command("help")]
         public async Task Help() {
+            var champs = ChampionIcons.Keys.ToList();
+            Shuffle(champs);
+            Shuffle(_players);
+            var helper = new Helper {NextChamps = 0};
+
             var embedBuilder = new EmbedBuilder()
                 .WithTitle($"Kureq's Shitty Help Command")
-                .WithFooter("Contact Kureq#4029 if you still need help")
+                .WithFooter("Contact Kureq#4029 if you still need help - https://github.com/vCas/AllstarsBot/issues")
                 .WithCurrentTimestamp()
                 .WithDescription(
                     "The command to create new teams is: ```!LeagueBot New```\nKeep in mind that if you have an uneven amount of players e.g. 5, the bot will always add an extra player to red team (team 2)");
 
-            embedBuilder.AddField("Champions Per Team",
-                "Usage: ```!LeagueBot New ChampionAmount:\"15\"```\ndefines the amount of Champions that each team gets to choose from.\n Default 12 without any players defined or [PlayerAmount + 2] if players are found.");
-            embedBuilder.AddField("Chaining LeagueCommands",
-                "You can chain commands like so: ```!Leaguebot New Bans:\"Camille,Lulu,Teemo\" Players:\"TrundleGod, Feedius, SapphireCrystal, ZileanIsDumb, FuckShaco, RockIsgood, HarryPulledAWilly, WhoEvenPlaysADC\" ChampionAmount:\"15\"```");
-
             embedBuilder.AddField("No Parameters",
-                $"Without parameters it generates two team with 12 random champions.\nIf you're joined to a voice channel, the bot will try to pull the players from those who are in the channel.",
+                "Without parameters it generates two team with 12 random champions.\nIf you're joined to a voice channel, the bot will try to pull the players from those who are in the channel.",
                 false);
 
+            embedBuilder.AddField("Champions Per Team",
+                "Usage: ```!LeagueBot New ChampionAmount:\"15\"```\ndefines the amount of Champions that each team gets to choose from.\n Default 12 without any players defined or [PlayerAmount + 2] if players are found.");
+
             embedBuilder.AddField("Bans",
-                $"Usage: ```!LeagueBot New Bans:\"Camille,Veigar,Karthus,Yuumi\"```\nPrevents the target champions from being available. Remember the list have to be in double quotations.");
+                $"Usage: ```!LeagueBot New Bans:\"{GetStringListFromArray(champs, 3, helper)}\"```\nPrevents the target champions from being available. Remember the list have to be in double quotations.");
 
             embedBuilder.AddField("Filter Voice Chat Players",
-                "Usage: ```!LeagueBot New Filter:\"Kureq,Snigeren,Ugimagimato,LydBot\"```\nBy Default, if no _players_ are defined, the bot will try to add all that are joined to the voice chat.\nBut if you want to filter players, in the voice chat, that for some reason, don't wanna play intern league(Fucking Illaoi Mains)\nRemember to add the music bots if you create teams from voice");
+                $"Usage: ```!LeagueBot New Filter:\"{GetStringListFromArray(_players, 4)}\"```\nBy Default, if no _players_ are defined, the bot will try to add all that are joined to the voice chat.\nBut if you want to filter players, in the voice chat, that for some reason, don't wanna play intern league(Fucking Illaoi Mains)\nRemember to add the music bots if you create teams from voice");
 
+            Shuffle(_players);
             embedBuilder.AddField("Custom Player List",
-                "Usage: ```!LeagueBot New Players:\"TrundleGod, Feedius, SapphireCrystal, ZileanIsDumb, FuckShaco, RockIsgood, HarryPulledAWilly, WhoEvenPlaysADC\"```\nCreate custom players / nicknames, if you use this option the bot will not pull players from the Voice Chat.\n");
+                $"Usage: ```!LeagueBot New Players:\"{GetStringListFromArray(_players, 10)}\"```\nCreate custom players / nicknames, if you use this option the bot will not pull players from the Voice Chat.\n");
 
+            Shuffle(_players);
             embedBuilder.AddField("Predefined Teams",
-                "Usage: ```!LeagueBot New Team1: \"Kureq, Helms, Lerchemus, Brandt, SapphireProphet\" Team2:\"Snigeren, FlyvendeSten, TrylleFjams, DevMozz, GuildMaster\"```\nPredefines the two teams, the bot will no longer try to create random teams, or pull from voice chat.\nYou need to define team1(Blue Team) and team2(Red Team)");
+                $"Usage: ```!LeagueBot New {GetTwoTeamsFromArray(_players, 5)}```\nPredefines the two teams, the bot will no longer try to create random teams, or pull from voice chat.\nYou need to define team1(Blue Team) and team2(Red Team)");
+
+            Shuffle(_players);
+            embedBuilder.AddField("Chaining LeagueCommands",
+                $"You can chain commands like so: ```!Leaguebot New Bans:\"{GetStringListFromArray(champs, 3, helper)}\" Players:\"{GetStringListFromArray(_players, 6)}\" ChampionAmount:\"15\"```");
+
             var embedBuild = embedBuilder.Build();
             await ReplyAsync(embed: embedBuild);
         }
 
-        private static int GetChampionNumber(int i, string[] champs, ICollection<string> bannedChamps = null) {
+        private static string GetTwoTeamsFromArray<T>(IEnumerable<T> arr, int teamSize) {
+            var enumerable = arr.ToList();
+            var t1 = enumerable.Take(teamSize).ToList();
+            var t2 = enumerable.Skip(teamSize).Take(teamSize).ToList();
+
+            return $"Team1: \"{string.Join(", ", t1)}\" Team2: \"{string.Join(", ", t2)}\"";
+        }
+
+        private static string GetStringListFromArray<T>(IEnumerable<T> arr, int amount, Helper helper = null) {
+            if (helper == null) return string.Join(", ", arr.Take(amount));
+            var str = string.Join(", ", arr.Skip(helper.NextChamps).Take(amount));
+            helper.NextChamps += amount;
+            return str;
+        }
+
+        private static int GetChampionNumber(int i, IReadOnlyList<string> champs,
+            ICollection<string> bannedChamps = null) {
             var champ = champs[i];
             if (bannedChamps == null || !bannedChamps.Contains(champ)) return i;
             i++;
@@ -405,7 +433,10 @@ namespace AllstarsBot.modules {
             return sb.ToString();
         }
 
-        private static string[] TeamCreator(Dictionary<string, string> champs, List<string> team, int maxSize = 20) {
+        private static string[] TeamCreator(IReadOnlyDictionary<string, string> champs, List<string> team,
+            int maxSize = 20) {
+            //as the max char limit for a value on discord is 1024, any champ count higher than 20 needs to be split
+            //We split them evenly by calculating array splits so 66 champs per team would be [20,20,20,6] 
             var max = Enumerable.Repeat(maxSize, team.Count / maxSize).ToList();
             if (team.Count % maxSize != 0) {
                 max.Add(team.Count % maxSize);
@@ -428,7 +459,17 @@ namespace AllstarsBot.modules {
             return arrs.ToArray();
         }
 
-        private Dictionary<string, string> GetChampions() {
+        private static void Shuffle<T>(IList<T> array) {
+            var n = array.Count;
+            for (var i = 0; i < (n - 1); i++) {
+                var r = i + Random.Next(n - i);
+                var t = array[r];
+                array[r] = array[i];
+                array[i] = t;
+            }
+        }
+
+        private static Dictionary<string, string> GetChampions() {
             var client = new WebClient();
             client.Headers.Add("user-agent",
                 "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36");

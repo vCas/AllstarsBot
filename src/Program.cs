@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
@@ -9,10 +10,11 @@ using Microsoft.Extensions.DependencyInjection;
 namespace AllstarsBot {
     internal class Program {
         static void Main() {
+
             var token = Environment.GetEnvironmentVariable("DISCORDTOKEN")?.Trim();
             new Program().RunBotAsync(token).GetAwaiter().GetResult();
         }
-
+        
         private DiscordSocketClient _client;
         private CommandService _commands;
         private IServiceProvider _services;
